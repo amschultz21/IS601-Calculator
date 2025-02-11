@@ -1,6 +1,6 @@
 ''' My Calculator Test'''
 
-from calculator import add, subtract
+from calculator.operations import add, subtract, multiply, divide
 
 def test_addition():
     '''Test that addition function works'''
@@ -11,9 +11,9 @@ def test_subtraction():
     assert subtract (2,2) == 0
 
 def test_multiplication():
-    '''Test that multiplication works'''
-    assert test_multiplication (2,2) == 4
+    '''Test that multiply works'''
+    assert multiply (2,2) == 4
 
 def test_division():
     '''Test that division works'''
-    assert test_division (2,2) == 1
+    assert divide (2,2) == 1
