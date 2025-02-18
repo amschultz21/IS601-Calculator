@@ -1,9 +1,17 @@
 class Calculation:
-    def __init__(self, a, b, operation):
-        self.a = a
-        self.b = b
-        self.operation = operation  # Store the operation function
+    def __init__(self, num1, num2, operation):
+        self.num1 = num1
+        self.num2 = num2
+        self.operation = operation
 
-    def get_result(self):
-        # Call the stored operation with a and b
-        return self.operation(self.a, self.b)
+    def perform(self):
+        if self.operation == "add":
+            return self.num1 + self.num2
+        elif self.operation == "subtract":
+            return self.num1 - self.num2
+        elif self.operation == "multiply":
+            return self.num1 * self.num2
+        elif self.operation == "divide":
+            return self.num1 / self.num2 if self.num2 != 0 else None
+        else:
+            raise ValueError("Invalid operation")
