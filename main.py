@@ -1,4 +1,6 @@
 import sys
+import os
+import importlib.util
 from calculator import Calculator
 from decimal import Decimal, InvalidOperation
 
@@ -10,10 +12,26 @@ COMMANDS = {
     'divide': Calculator.divide
 }
 
+def load_plugins(commands):
+    """Automatically load plugins from a 'plugins' directory and register their commands."""
+    plugins_dir = os.path.join(os.path.dirname(__file__), 'plugins')
+    if not os.path.isdir(plugins_dir):
+        return  # No plugins folder found, nothing to load.
+    for filename in os.listdir(plugins_dir):
+        if filename.endswith('.py') and filename != '__init__.py':
+            filepath = os.path.join(plugins_dir, filename)
+            module_name = os.path.splitext(filename)[0]
+            spec = importlib.util.spec_from_file_location(module_name, filepath)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            # If the module defines a register_command function, call it.
+            if hasattr(module, 'register_command'):
+                module.register_command(commands)
+
 def print_menu():
     """Prints the available commands to the user."""
     print("Available commands:")
-    for cmd in COMMANDS.keys():
+    for cmd in sorted(COMMANDS.keys()):
         print(f"  - {cmd}")
     print("\nAdditional commands:")
     print("  - menu   : Display this menu")
@@ -66,6 +84,9 @@ def execute_command(command_line):
         print(f"An error occurred: {e}")
 
 def main():
+    # Load plugins to extend the commands dictionary.
+    load_plugins(COMMANDS)
+
     # Non-interactive mode: if exactly three command-line arguments are provided.
     if len(sys.argv) == 4:
         # Expected usage: python calculator_main.py <number1> <number2> <operation>
