@@ -2,17 +2,41 @@ import sys
 from calculator import Calculator
 from decimal import Decimal, InvalidOperation
 
+# Global command mapping for Calculator operations.
+COMMANDS = {
+    'add': Calculator.add,
+    'subtract': Calculator.subtract,
+    'multiply': Calculator.multiply,
+    'divide': Calculator.divide
+}
+
+def print_menu():
+    """Prints the available commands to the user."""
+    print("Available commands:")
+    for cmd in COMMANDS.keys():
+        print(f"  - {cmd}")
+    print("\nAdditional commands:")
+    print("  - menu   : Display this menu")
+    print("  - exit   : Exit the calculator")
+    print("  - quit   : Exit the calculator")
+    print()  # Blank line for readability.
+
 def execute_command(command_line):
     """
-    Parses a command line, converts the arguments to Decimal,
+    Parses a command line, converts number arguments to Decimal,
     and executes the corresponding Calculator operation.
     """
     tokens = command_line.strip().split()
     if not tokens:
-        return  # Empty input; do nothing.
+        return  # Ignore empty input.
 
-    # Get the command (operation) and allow quitting.
     command = tokens[0].lower()
+    
+    # Check for special commands.
+    if command == "menu":
+        print_menu()
+        return
+
     if command in ("exit", "quit"):
         print("Exiting calculator.")
         sys.exit(0)
@@ -21,7 +45,6 @@ def execute_command(command_line):
         print("Usage: <command> <number1> <number2>")
         return
 
-    # Try to convert number arguments to Decimal.
     try:
         a = Decimal(tokens[1])
         b = Decimal(tokens[2])
@@ -29,17 +52,9 @@ def execute_command(command_line):
         print("Invalid number input: please enter valid numbers.")
         return
 
-    # Command pattern: map commands to Calculator methods.
-    command_mappings = {
-        'add': Calculator.add,
-        'subtract': Calculator.subtract,
-        'multiply': Calculator.multiply,
-        'divide': Calculator.divide
-    }
-
-    operation = command_mappings.get(command)
+    operation = COMMANDS.get(command)
     if not operation:
-        print(f"Unknown command: {command}. Valid commands are add, subtract, multiply, divide.")
+        print(f"Unknown command: {command}. Type 'menu' to see available commands.")
         return
 
     try:
@@ -51,18 +66,16 @@ def execute_command(command_line):
         print(f"An error occurred: {e}")
 
 def main():
-    # Non-interactive mode: use command-line arguments if provided.
+    # Non-interactive mode: if exactly three command-line arguments are provided.
     if len(sys.argv) == 4:
         # Expected usage: python calculator_main.py <number1> <number2> <operation>
         _, a, b, op = sys.argv
         command_line = f"{op} {a} {b}"
         execute_command(command_line)
     else:
-        # REPL mode: interactive loop.
+        # Interactive mode: start the REPL.
         print("Welcome to the interactive calculator!")
-        print("Enter commands in the format: <operation> <number1> <number2>")
-        print("Supported operations: add, subtract, multiply, divide")
-        print("Type 'exit' or 'quit' to exit.")
+        print_menu()
         while True:
             try:
                 user_input = input("calc> ")
