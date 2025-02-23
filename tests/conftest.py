@@ -27,4 +27,3 @@ def pytest_configure(config):
 def records(request):
     # Access the generated records (empty list if none generated)
     return getattr(request.config, "_generated_records", [])
- 
