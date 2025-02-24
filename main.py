@@ -1,6 +1,7 @@
 import sys
 import os
 import importlib.util
+import multiprocessing
 from calculator import Calculator
 from decimal import Decimal, InvalidOperation
 
@@ -24,7 +25,6 @@ def load_plugins(commands):
             spec = importlib.util.spec_from_file_location(module_name, filepath)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            # If the module defines a register_command function, call it.
             if hasattr(module, 'register_command'):
                 module.register_command(commands)
 
@@ -43,21 +43,17 @@ def execute_command(command_line):
     """
     Parses a command line, converts number arguments to Decimal,
     and executes the corresponding Calculator operation.
+    
+    Note: Do NOT handle 'exit' or 'quit' here, as these are now managed in the main loop.
     """
     tokens = command_line.strip().split()
     if not tokens:
         return  # Ignore empty input.
 
-    command = tokens[0].lower()
-    
-    # Check for special commands.
-    if command == "menu":
+    # If the user typed "menu", show the menu.
+    if tokens[0].lower() == "menu":
         print_menu()
         return
-
-    if command in ("exit", "quit"):
-        print("Exiting calculator.")
-        sys.exit(0)
 
     if len(tokens) < 3:
         print("Usage: <command> <number1> <number2>")
@@ -70,9 +66,9 @@ def execute_command(command_line):
         print("Invalid number input: please enter valid numbers.")
         return
 
-    operation = COMMANDS.get(command)
+    operation = COMMANDS.get(tokens[0].lower())
     if not operation:
-        print(f"Unknown command: {command}. Type 'menu' to see available commands.")
+        print(f"Unknown command: {tokens[0]}. Type 'menu' to see available commands.")
         return
 
     try:
@@ -83,6 +79,12 @@ def execute_command(command_line):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+def execute_command_multiprocess(command_line):
+    """Execute a command in a separate process using multiprocessing."""
+    p = multiprocessing.Process(target=execute_command, args=(command_line,))
+    p.start()
+    p.join()
+
 def main():
     # Load plugins to extend the commands dictionary.
     load_plugins(COMMANDS)
@@ -92,18 +94,25 @@ def main():
         # Expected usage: python calculator_main.py <number1> <number2> <operation>
         _, a, b, op = sys.argv
         command_line = f"{op} {a} {b}"
-        execute_command(command_line)
+        execute_command_multiprocess(command_line)
     else:
         # Interactive mode: start the REPL.
         print("Welcome to the interactive calculator!")
         print_menu()
         while True:
             try:
-                user_input = input("calc> ")
-                execute_command(user_input)
+                # Read input from the user.
+                user_input = input("calc> ").strip()
+                # Check for exit commands in the main process.
+                if user_input.lower() in ("exit", "quit"):
+                    print("Exiting calculator.")
+                    break
+                # Otherwise, run the command in a separate process.
+                execute_command_multiprocess(user_input)
             except (EOFError, KeyboardInterrupt):
                 print("\nExiting calculator.")
                 break
 
 if __name__ == '__main__':
+    multiprocessing.freeze_support()  # For Windows support.
     main()
