@@ -2,11 +2,9 @@ name: Python application
 
 on:
   push:
-<<<<<<< HEAD
     branches: [ main ]
   pull_request:
     branches: [ main ]
-=======
 
 jobs:
   build:
