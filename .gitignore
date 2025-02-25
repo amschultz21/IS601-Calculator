@@ -3,3 +3,4 @@
 .pytest_cache
 .*pycache*
 __pycashe__
+.env
