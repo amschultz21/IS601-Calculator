@@ -1,3 +1,19 @@
+# calculator_main.py
+import os
+from dotenv import load_dotenv
+
+# Load the environment variables from the .env file at the start.
+load_dotenv()
+
+# Retrieve the ENVIRONMENT variable
+environment = os.getenv("ENVIRONMENT", "production")  # Defaults to 'production' if not set
+
+print(f"Running in {environment} mode.")
+
+# Use the environment variable in your application logic as needed.
+if environment == "development":
+    print("Debug mode is ON!")
+
 import sys
 import os
 import importlib.util
